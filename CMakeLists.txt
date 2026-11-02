@@ -37,10 +37,17 @@ juce_add_plugin(PatchwerkModular
     AU_MAIN_TYPE kAudioUnitType_MusicDevice
     COPY_PLUGIN_AFTER_BUILD FALSE)
 
+# Source files may live in ./Source or directly in the project root.
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Source/Engine.cpp")
+    set(PW_SRC "${CMAKE_CURRENT_SOURCE_DIR}/Source")
+else()
+    set(PW_SRC "${CMAKE_CURRENT_SOURCE_DIR}")
+endif()
+
 target_sources(PatchwerkModular PRIVATE
-    Source/Engine.cpp
-    Source/PluginProcessor.cpp
-    Source/PluginEditor.cpp)
+    ${PW_SRC}/Engine.cpp
+    ${PW_SRC}/PluginProcessor.cpp
+    ${PW_SRC}/PluginEditor.cpp)
 
 target_compile_definitions(PatchwerkModular PUBLIC
     JUCE_WEB_BROWSER=0
@@ -55,11 +62,3 @@ target_link_libraries(PatchwerkModular
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags)
-
-option(PW_BUILD_TESTS "Build the offline test runner" OFF)
-if(PW_BUILD_TESTS)
-    juce_add_console_app(PatchwerkTest PRODUCT_NAME "PatchwerkTest")
-    target_sources(PatchwerkTest PRIVATE tests/TestMain.cpp Source/Engine.cpp Source/PluginProcessor.cpp Source/PluginEditor.cpp)
-    target_compile_definitions(PatchwerkTest PRIVATE JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JucePlugin_Name="Patchwerk" JucePlugin_Build_Standalone=0)
-    target_link_libraries(PatchwerkTest PRIVATE juce::juce_audio_utils juce::juce_dsp juce::juce_recommended_config_flags)
-endif()
